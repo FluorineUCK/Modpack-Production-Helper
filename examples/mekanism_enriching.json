@@ -1,0 +1,14 @@
+{
+  "type": "mekanism:enriching",
+  "id": "mekanism:enriching/enriched_iron",
+  "input": {
+    "ingredient": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "output": {
+    "item": "mekanism:enriched_iron",
+    "count": 1
+  },
+  "energy": 2000
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "id": "minecraft:crafting/crafting_table",
+  "pattern": [
+    "PP",
+    "PP"
+  ],
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "result": {
+    "item": "minecraft:crafting_table",
+    "count": 1
+  }
+}

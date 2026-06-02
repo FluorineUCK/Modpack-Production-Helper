@@ -1,0 +1,21 @@
+{
+  "type": "thermal:pulverizer",
+  "id": "thermal:pulverizer/iron_dust",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot"
+    }
+  ],
+  "results": [
+    {
+      "item": "thermal:iron_dust",
+      "count": 1
+    },
+    {
+      "item": "thermal:nickel_dust",
+      "count": 1,
+      "chance": 0.1
+    }
+  ],
+  "energy": 4000
+}

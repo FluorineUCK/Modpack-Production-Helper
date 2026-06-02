@@ -1,0 +1,27 @@
+# Local modpack inputs
+05_Materials/mods/*
+!05_Materials/mods/.gitkeep
+05_Materials/**/*.jar
+05_Materials/**/*.zip
+05_Materials/**/*.disabled
+05_Materials/**/.connector/
+
+# Generated vault output
+01_Items/*.md
+!01_Items/.gitkeep
+02_Recipes/*.md
+!02_Recipes/.gitkeep
+03_Machines/*.md
+!03_Machines/.gitkeep
+04_Mods/*.md
+!04_Mods/.gitkeep
+
+# Node / tooling
+node_modules/
+npm-debug.log*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.obsidian/workspace*.json
+.obsidian/cache
