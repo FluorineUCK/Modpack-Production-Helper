@@ -172,6 +172,45 @@ Item -> Recipe -> Item
 
 This keeps recipe notes visible as first-class production steps.
 
+### Run Path Search Inside Obsidian
+
+Use Templater:
+
+1. Install and enable Templater.
+2. Set Templater's template folder to:
+
+```text
+00_System/Templates
+```
+
+3. Open the command palette.
+4. Run:
+
+```text
+Templater: Insert template
+```
+
+5. Pick:
+
+```text
+Find Item Paths.md
+```
+
+6. Enter the source item and target item.
+
+Examples:
+
+```text
+minecraft:cobblestone
+minecraft:sand
+```
+
+The template can either insert the result into the current note or write it to a note such as:
+
+```text
+99_Views/Cobblestone to Sand Paths.md
+```
+
 ## Recipe Notes
 
 Recipe notes contain static links to inputs, machines, mods, and outputs:
