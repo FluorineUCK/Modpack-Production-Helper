@@ -142,6 +142,36 @@ Example:
 
 This means Cobblestone can become Gravel through the Create milling recipe.
 
+## Find Paths Between Two Items
+
+Obsidian and Dataview are good for immediate neighbors. For full multi-step paths from item A to item B, use:
+
+```bash
+node 00_System/Scripts/findItemPaths.js minecraft:cobblestone minecraft:gravel
+```
+
+You can pass item IDs, note names, note paths, or wiki links:
+
+```bash
+node 00_System/Scripts/findItemPaths.js minecraft:cobblestone minecraft:sand --max-depth 4 --limit 20
+node 00_System/Scripts/findItemPaths.js item.minecraft.cobblestone item.minecraft.sand
+node 00_System/Scripts/findItemPaths.js "[[01_Items/item.minecraft.cobblestone]]" "[[01_Items/item.minecraft.sand]]"
+```
+
+Write the result into the vault:
+
+```bash
+node 00_System/Scripts/findItemPaths.js minecraft:cobblestone minecraft:sand --max-depth 4 --write "99_Views/Cobblestone to Sand Paths.md"
+```
+
+Each path is shown as:
+
+```md
+Item -> Recipe -> Item
+```
+
+This keeps recipe notes visible as first-class production steps.
+
 ## Recipe Notes
 
 Recipe notes contain static links to inputs, machines, mods, and outputs:

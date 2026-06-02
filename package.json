@@ -4,7 +4,7 @@
   "private": true,
   "description": "File-based Obsidian helper for Minecraft modpack production graphs.",
   "scripts": {
-    "test": "node --test tests/nameUtils.test.js tests/normalizeRecipe.test.js tests/generation.test.js tests/readZipRecipes.test.js tests/updateItemRecipeLinks.test.js tests/pruneUninstalledNamespaces.test.js"
+    "test": "node --test tests/nameUtils.test.js tests/normalizeRecipe.test.js tests/generation.test.js tests/readZipRecipes.test.js tests/updateItemRecipeLinks.test.js tests/pruneUninstalledNamespaces.test.js tests/findItemPaths.test.js"
   },
   "license": "UNLICENSED"
 }
