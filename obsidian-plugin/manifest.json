@@ -1,0 +1,9 @@
+{
+  "id": "modpack-production-helper",
+  "name": "Modpack Production Helper",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Generate an Obsidian production graph from Minecraft mod JAR recipe and tag data.",
+  "author": "FluorineUCK",
+  "isDesktopOnly": true
+}

@@ -25,8 +25,8 @@ Recipes are first-class notes. Do not expect the graph to be only item-to-item l
 
 ## Requirements
 
-- Node.js
-- Obsidian
+- Obsidian Desktop
+- Node.js, only for the CLI/script workflow
 - Recommended Obsidian plugins:
   - Dataview
   - Templater
@@ -35,7 +35,58 @@ Recipes are first-class notes. Do not expect the graph to be only item-to-item l
 
 Mermaid, Graph View, Local Graph, and Canvas are built into Obsidian.
 
-## Quick Start From Mod JARs
+## Entry Points
+
+This repo supports two ways to use the same production graph:
+
+- Obsidian plugin: use `obsidian-plugin/` if you want to import JARs and search paths from inside Obsidian without running Node commands.
+- Node CLI: use `00_System/Scripts/*.js` if you want terminal commands, tests, or automation.
+
+## Quick Start Inside Obsidian
+
+1. Copy the tracked plugin package:
+
+```text
+obsidian-plugin/
+```
+
+to:
+
+```text
+<your vault>/.obsidian/plugins/modpack-production-helper/
+```
+
+2. Restart Obsidian or reload plugins.
+
+3. Enable **Modpack Production Helper** in Community Plugins.
+
+4. Put enabled mod JAR files in:
+
+```text
+06_Materials/mods/
+```
+
+5. Open the command palette and run:
+
+```text
+Modpack Production Helper: Import from material folder
+```
+
+Useful plugin commands:
+
+```text
+Modpack Production Helper: Import from material folder
+Modpack Production Helper: Find item paths
+Modpack Production Helper: Track production from item A to B
+```
+
+Path and production-track results are written under:
+
+```text
+99_Views/Item Paths/
+```
+
+## Quick Start From Mod JARs With Node CLI
 
 1. Put your enabled mod JAR files in:
 
@@ -186,7 +237,19 @@ This keeps recipe notes visible as first-class production steps.
 
 ### Run Path Search Inside Obsidian
 
-Use Templater:
+Use the first-party plugin command:
+
+```text
+Modpack Production Helper: Find item paths
+```
+
+For richer route notes with recipe context, use:
+
+```text
+Modpack Production Helper: Track production from item A to B
+```
+
+The older Templater workflow still works:
 
 1. Install and enable Templater.
 2. Set Templater's template folder to:
@@ -348,6 +411,6 @@ The CLI is recommended for full modpack JAR imports.
 
 - Not every mod-specific recipe format is fully normalized.
 - Unknown process formats may still import with inferred machines.
-- Tag ingredients such as `#c:ingots/iron` are preserved as tag inputs, but tag notes are not generated yet.
+- Tag ingredients such as `#c:ingots/iron` depend on tag definitions found in installed JARs; unresolved tags are still represented as generated tag notes.
 - Some generated machine notes may be named `unknown_machine` when the recipe format does not identify a machine.
 - Create sequenced assembly chances are preserved as source values, not normalized probabilities.
