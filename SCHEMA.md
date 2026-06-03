@@ -83,6 +83,31 @@ tags:
   - mod/minecraft
 ```
 
+## Tag
+
+```yaml
+type: tag
+schema: 1
+id: "#c:ingots/zinc"
+tag_namespace: "c"
+tag_path: "ingots/zinc"
+registry: "item"
+kind: "item_tag"
+status: "auto"
+declared_by:
+  - "[mechanical] create-1.21.1-6.0.10.jar"
+members:
+  - "[[01_Items/item.create.zinc_ingot]]"
+child_tags: []
+tags:
+  - tag
+  - tag/item
+  - tag_namespace/c
+  - status/auto
+```
+
+Tags are compatibility buckets, not normal items. Recipe tag inputs should link to `05_tags/tag.*` notes.
+
 ## Status Values
 
 - `auto`: generated with enough confidence for MVP use.

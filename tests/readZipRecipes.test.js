@@ -4,13 +4,34 @@ const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 const { listImportFiles } = require("../00_System/Scripts/importRecipes");
-const { isRecipeEntry, stripBom } = require("../00_System/Scripts/readZipRecipes");
+const {
+  isRecipeEntry,
+  isTagEntry,
+  stripBom,
+  tagInfoFromEntry,
+} = require("../00_System/Scripts/readZipRecipes");
 
 test("recipe entry filter accepts real recipe folders only", () => {
   assert.equal(isRecipeEntry("data/create/recipe/mixing/brass_ingot.json"), true);
   assert.equal(isRecipeEntry("data/create/recipes/mixing/brass_ingot.json"), true);
   assert.equal(isRecipeEntry("data/create/advancement/recipes/misc/smelting/bread.json"), false);
   assert.equal(isRecipeEntry("assets/create/lang/en_us.json"), false);
+});
+
+test("tag entry filter accepts item and fluid tag folders", () => {
+  assert.equal(isTagEntry("data/c/tags/item/ingots/zinc.json"), true);
+  assert.equal(isTagEntry("data/c/tags/items/ingots/zinc.json"), true);
+  assert.equal(isTagEntry("data/c/tags/fluid/honey.json"), true);
+  assert.equal(isTagEntry("data/create/recipe/mixing/brass_ingot.json"), false);
+});
+
+test("tagInfoFromEntry maps datapack tag path to tag ID", () => {
+  assert.deepEqual(tagInfoFromEntry("data/c/tags/item/ingots/zinc.json"), {
+    id: "#c:ingots/zinc",
+    namespace: "c",
+    registry: "item",
+    path: "ingots/zinc",
+  });
 });
 
 test("directory import discovery includes archives and skips dot directories", () => {

@@ -7,11 +7,12 @@ const {
   modLink,
   modNoteName,
   recipeNoteName,
+  tagLink,
 } = require("./nameUtils");
 
 function noteForEntry(entry) {
   if (entry.kind === "tag") {
-    return "";
+    return tagLink(entry.id);
   }
   return itemLink(entry.id);
 }
@@ -28,7 +29,7 @@ function mermaidLabel(value) {
 function generateRecipeMarkdown(recipe) {
   const recipeMachineLink = machineLink(recipe.machine);
   const recipeModLink = modLink(recipe.mod);
-  const inputLinks = recipe.inputs.filter((input) => input.kind !== "tag").map(noteForEntry);
+  const inputLinks = recipe.inputs.map(noteForEntry);
   const outputLinks = recipe.outputs.filter((output) => output.kind !== "tag").map(noteForEntry);
   const machineLinks = [recipeMachineLink];
   const titleOutput = recipe.outputs[0] ? recipe.outputs[0].id : "Unknown Output";

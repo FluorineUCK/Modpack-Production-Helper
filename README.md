@@ -8,6 +8,7 @@ Give it mod `.jar` files or exported recipe `.json` files, and it creates:
 - recipe notes in `02_Recipes`
 - machine notes in `03_Machines`
 - mod notes in `04_Mods`
+- tag notes in `05_tags`
 - Dataview dashboards in `99_Views`
 
 The production graph is modeled as:
@@ -39,7 +40,7 @@ Mermaid, Graph View, Local Graph, and Canvas are built into Obsidian.
 1. Put your enabled mod JAR files in:
 
 ```text
-05_Materials/mods/
+06_Materials/mods/
 ```
 
 2. Open a terminal in this folder:
@@ -51,7 +52,7 @@ Modpack-Production
 3. Run the importer:
 
 ```bash
-node 00_System/Scripts/importRecipes.js --overwrite-generated --prune-uninstalled 05_Materials
+node 00_System/Scripts/importRecipes.js --overwrite-generated --prune-uninstalled 06_Materials
 ```
 
 4. Open `Modpack-Production` as an Obsidian vault.
@@ -69,12 +70,12 @@ node 00_System/Scripts/importRecipes.js --overwrite-generated --prune-uninstalle
 The command:
 
 ```bash
-node 00_System/Scripts/importRecipes.js --overwrite-generated --prune-uninstalled 05_Materials
+node 00_System/Scripts/importRecipes.js --overwrite-generated --prune-uninstalled 06_Materials
 ```
 
 does this:
 
-- recursively scans `05_Materials`
+- recursively scans `06_Materials`
 - imports `.jar`, `.zip`, and `.json` files
 - skips dot-directories such as `.connector`
 - ignores disabled files such as `.jar.disabled`
@@ -85,7 +86,16 @@ data/<namespace>/recipe/*.json
 data/<namespace>/recipes/*.json
 ```
 
-- creates or refreshes generated item, recipe, machine, and mod notes
+- reads tag JSON from JAR paths like:
+
+```text
+data/<tag_namespace>/tags/item/*.json
+data/<tag_namespace>/tags/items/*.json
+data/<tag_namespace>/tags/fluid/*.json
+data/<tag_namespace>/tags/fluids/*.json
+```
+
+- creates or refreshes generated item, recipe, machine, mod, and tag notes
 - preserves notes marked `status: manual`
 - removes generated compat notes for mods that are not actually installed
 
@@ -154,6 +164,7 @@ You can pass item IDs, note names, note paths, or wiki links:
 
 ```bash
 node 00_System/Scripts/findItemPaths.js minecraft:cobblestone minecraft:sand --max-depth 4 --limit 20
+node 00_System/Scripts/findItemPaths.js create:zinc_ingot create:brass_ingot --max-depth 4 --limit 20
 node 00_System/Scripts/findItemPaths.js item.minecraft.cobblestone item.minecraft.sand
 node 00_System/Scripts/findItemPaths.js "[[01_Items/item.minecraft.cobblestone]]" "[[01_Items/item.minecraft.sand]]"
 ```
@@ -161,13 +172,14 @@ node 00_System/Scripts/findItemPaths.js "[[01_Items/item.minecraft.cobblestone]]
 Write the result into the vault:
 
 ```bash
-node 00_System/Scripts/findItemPaths.js minecraft:cobblestone minecraft:sand --max-depth 4 --write "99_Views/Cobblestone to Sand Paths.md"
+node 00_System/Scripts/findItemPaths.js minecraft:cobblestone minecraft:sand --max-depth 4 --write "99_Views/Item Paths/Cobblestone to Sand Paths.md"
 ```
 
 Each path is shown as:
 
 ```md
 Item -> Recipe -> Item
+Item -> Tag -> Recipe -> Item
 ```
 
 This keeps recipe notes visible as first-class production steps.
@@ -208,7 +220,7 @@ minecraft:sand
 The template can either insert the result into the current note or write it to a note such as:
 
 ```text
-99_Views/Cobblestone to Sand Paths.md
+99_Views/Item Paths/Cobblestone to Sand Paths.md
 ```
 
 ## Recipe Notes
@@ -221,12 +233,51 @@ Recipe notes contain static links to inputs, machines, mods, and outputs:
 [[01_Items/item.minecraft.iron_ingot]]
 ```
 
+Tag inputs link to `05_tags` notes:
+
+```md
+[[05_tags/tag.c.ingots.zinc]]
+```
+
 They also include:
 
 - YAML frontmatter for Dataview
 - input and output tables
 - a Mermaid flowchart
 - preserved raw JSON
+
+## Tag Notes
+
+Recipe inputs such as:
+
+```json
+{ "tag": "c:ingots/zinc" }
+```
+
+are linked to tag notes, not fake item notes.
+
+Example tag note:
+
+```text
+05_tags/tag.c.ingots.zinc.md
+```
+
+The tag is built from datapack tag definitions such as:
+
+```text
+data/c/tags/item/ingots/zinc.json
+```
+
+The graph can route through tags:
+
+```text
+[[01_Items/item.create.zinc_ingot]]
+-> [[05_tags/tag.c.ingots.zinc]]
+-> [[02_Recipes/recipe.create.mixing.brass_ingot]]
+-> [[01_Items/item.create.brass_ingot]]
+```
+
+Shared namespaces such as `c`, `forge`, `neoforge`, `fabric`, and `minecraft` are treated as tag namespaces, not content mods.
 
 ## Graph View
 
@@ -240,7 +291,7 @@ tag:mod/create
 tag:process/crushing
 tag:status/check
 -path:00_System
--path:05_Materials
+-path:06_Materials
 ```
 
 Use Local Graph from an item note to see nearby recipes and outputs.
@@ -264,13 +315,13 @@ The importer preserves manual notes when using `--overwrite-generated`.
 Common rerun command:
 
 ```bash
-node 00_System/Scripts/importRecipes.js --overwrite-generated --prune-uninstalled 05_Materials
+node 00_System/Scripts/importRecipes.js --overwrite-generated --prune-uninstalled 06_Materials
 ```
 
 Use recipe-only refresh if you do not want item, machine, or mod notes regenerated:
 
 ```bash
-node 00_System/Scripts/importRecipes.js --overwrite-recipes 05_Materials
+node 00_System/Scripts/importRecipes.js --overwrite-recipes 06_Materials
 ```
 
 ## Templater Import

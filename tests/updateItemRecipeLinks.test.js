@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
 const {
+  buildRecipeIndex,
   renderGeneratedSection,
   updateGeneratedSection,
 } = require("../00_System/Scripts/updateItemRecipeLinks");

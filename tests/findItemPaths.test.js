@@ -66,6 +66,37 @@ test("findItemPaths finds direct and multi-step item conversion paths", () => {
   assert.equal(paths.some((path) => path.length === 2), true);
 });
 
+test("findItemPaths can route item membership through tags into recipes", () => {
+  const recipes = [
+    {
+      link: "[[02_Recipes/recipe.create.mixing.brass_ingot]]",
+      method: "mixing",
+      machine: "[[03_Machines/machine.create.mechanical_mixer]]",
+      mod: "[[04_Mods/mod.create]]",
+      inputs: ["[[05_tags/tag.c.ingots.zinc]]"],
+      outputs: ["[[01_Items/item.create.brass_ingot]]"],
+    },
+  ];
+  const tags = [
+    {
+      link: "[[05_tags/tag.c.ingots.zinc]]",
+      members: ["[[01_Items/item.create.zinc_ingot]]"],
+      childTags: [],
+    },
+  ];
+
+  const graph = buildItemGraph(recipes, tags);
+  const paths = findItemPaths(
+    "[[01_Items/item.create.zinc_ingot]]",
+    "[[01_Items/item.create.brass_ingot]]",
+    { graph, maxDepth: 3, limit: 10 },
+  );
+
+  assert.equal(paths.length, 1);
+  assert.equal(paths[0][0].kind, "tag");
+  assert.equal(paths[0][1].recipe.link, "[[02_Recipes/recipe.create.mixing.brass_ingot]]");
+});
+
 test("renderMarkdown shows recipe nodes between item nodes", () => {
   const markdown = renderMarkdown(
     "[[01_Items/item.minecraft.cobblestone]]",

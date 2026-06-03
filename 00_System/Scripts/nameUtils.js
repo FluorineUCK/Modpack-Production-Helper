@@ -45,6 +45,10 @@ function modNoteName(id) {
   return noteName("mod", id);
 }
 
+function tagNoteName(id) {
+  return noteName("tag", id);
+}
+
 function recipeNoteName(recipe) {
   return noteName("recipe", recipe.id || `${recipe.type || "unknown"}.${Date.now()}`);
 }
@@ -59,6 +63,10 @@ function machineFileName(id) {
 
 function modFileName(id) {
   return `${modNoteName(id)}.md`;
+}
+
+function tagFileName(id) {
+  return `${tagNoteName(id)}.md`;
 }
 
 function recipeFileName(recipe) {
@@ -79,6 +87,10 @@ function machineLink(id) {
 
 function modLink(id) {
   return wikiLink(`04_Mods/${modNoteName(id)}`);
+}
+
+function tagLink(id) {
+  return wikiLink(`05_tags/${tagNoteName(id)}`);
 }
 
 function displayNameFromId(id) {
@@ -126,5 +138,8 @@ module.exports = {
   recipeNoteName,
   safeFileName,
   slugFromOutputs,
+  tagFileName,
+  tagLink,
+  tagNoteName,
   wikiLink,
 };

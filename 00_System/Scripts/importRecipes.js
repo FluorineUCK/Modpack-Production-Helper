@@ -5,9 +5,10 @@ const { generateItemMarkdown } = require("./generateItemNote");
 const { generateMachineMarkdown } = require("./generateMachineNote");
 const { generateModMarkdown } = require("./generateModNote");
 const { generateRecipeMarkdown } = require("./generateRecipeNote");
+const { generateTagMarkdown } = require("./generateTagNote");
 const { normalizeRecipe } = require("./normalizeRecipe");
 const { pruneUninstalledNamespaces } = require("./pruneUninstalledNamespaces");
-const { readRecipeJsonFromArchive, stripBom } = require("./readZipRecipes");
+const { readRecipeJsonFromArchive, readTagJsonFromArchive, stripBom } = require("./readZipRecipes");
 const { updateItemRecipeLinks } = require("./updateItemRecipeLinks");
 const {
   itemFileName,
@@ -15,6 +16,9 @@ const {
   modFileName,
   parseNamespace,
   recipeFileName,
+  tagFileName,
+  itemLink,
+  tagLink,
 } = require("./nameUtils");
 
 const ROOT = path.resolve(__dirname, "..", "..");
@@ -76,6 +80,82 @@ function readRecipeObjectsFromFile(filePath) {
     return readRecipeJsonFromArchive(filePath);
   }
   return readRecipesFromFile(filePath);
+}
+
+function readTagObjectsFromFile(filePath) {
+  if (isArchivePath(filePath)) {
+    return readTagJsonFromArchive(filePath);
+  }
+  return [];
+}
+
+function normalizeTagDefinition(tag) {
+  const values = Array.isArray(tag.raw && tag.raw.values) ? tag.raw.values : [];
+  const members = [];
+  const childTags = [];
+
+  for (const value of values) {
+    const id = typeof value === "string" ? value : value && value.id;
+    if (!id || typeof id !== "string") {
+      continue;
+    }
+    if (id.startsWith("#")) {
+      childTags.push(tagLink(id));
+    } else {
+      members.push(itemLink(id));
+    }
+  }
+
+  return {
+    id: tag.id,
+    registry: tag.registry,
+    declared_by: [tag.sourceArchive ? tag.sourceArchive.replace(/\.jar$/i, "") : tag.namespace],
+    members,
+    child_tags: childTags,
+    status: members.length || childTags.length ? "auto" : "check",
+  };
+}
+
+function mergeTagDefinitions(tags) {
+  const merged = new Map();
+
+  for (const tag of tags) {
+    const current = merged.get(tag.id) || {
+      id: tag.id,
+      registry: tag.registry || "item",
+      declared_by: [],
+      members: [],
+      child_tags: [],
+      status: "check",
+    };
+    current.declared_by.push(...(tag.declared_by || []));
+    current.members.push(...(tag.members || []));
+    current.child_tags.push(...(tag.child_tags || []));
+    if (tag.status === "auto") {
+      current.status = "auto";
+    }
+    merged.set(tag.id, current);
+  }
+
+  return [...merged.values()].map((tag) => ({
+    ...tag,
+    declared_by: [...new Set(tag.declared_by)],
+    members: [...new Set(tag.members)],
+    child_tags: [...new Set(tag.child_tags)],
+  }));
+}
+
+function referencedTagsFromRecipes(recipes) {
+  return recipes
+    .flatMap((recipe) => recipe.inputs.filter((input) => input.kind === "tag").map((input) => input.id))
+    .map((id) => ({
+      id,
+      registry: "item",
+      declared_by: [],
+      members: [],
+      child_tags: [],
+      status: "check",
+    }));
 }
 
 function itemCategory(entry) {
@@ -155,14 +235,29 @@ function importRecipe(recipe, options = {}) {
   return changed;
 }
 
+function importTag(tag, options = {}) {
+  const filePath = path.join(ROOT, "05_tags", tagFileName(tag.id));
+  if (
+    writeIfMissing(filePath, generateTagMarkdown(tag), {
+      overwrite: options.overwriteGenerated,
+      preserveManual: true,
+    })
+  ) {
+    return [filePath];
+  }
+  return [];
+}
+
 function importTargets(targets, options = {}) {
   const files = targets.flatMap(listImportFiles);
   const errors = [];
   const rawRecipes = [];
+  const rawTags = [];
 
   for (const file of files) {
     try {
       rawRecipes.push(...readRecipeObjectsFromFile(file));
+      rawTags.push(...readTagObjectsFromFile(file));
     } catch (error) {
       errors.push({ file, message: error.message });
     }
@@ -180,7 +275,12 @@ function importTargets(targets, options = {}) {
     }
   }
 
+  const tags = mergeTagDefinitions([
+    ...rawTags.map(normalizeTagDefinition),
+    ...referencedTagsFromRecipes(normalized),
+  ]);
   const changed = normalized.flatMap((recipe) => importRecipe(recipe, options));
+  changed.push(...tags.flatMap((tag) => importTag(tag, options)));
   const pruneResult = options.pruneUninstalled
     ? pruneUninstalledNamespaces(options.pruneTargets && options.pruneTargets.length ? options.pruneTargets : targets)
     : { deleted: [], installedNamespaces: new Set(), errors: [] };
@@ -237,5 +337,6 @@ module.exports = {
   listImportFiles,
   readRecipeObjectsFromFile,
   readRecipesFromFile,
+  readTagObjectsFromFile,
   writeIfMissing,
 };

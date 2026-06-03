@@ -5,6 +5,7 @@ const { itemLink } = require("./nameUtils");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const RECIPE_DIR = path.join(ROOT, "02_Recipes");
+const TAG_DIR = path.join(ROOT, "05_tags");
 
 function noteLinkForFile(folder, fileName) {
   return `[[${folder}/${fileName.replace(/\.md$/i, "")}]]`;
@@ -82,8 +83,49 @@ function readRecipes(recipeDir = RECIPE_DIR) {
     .filter((recipe) => recipe.inputs.length && recipe.outputs.length);
 }
 
-function buildItemGraph(recipes) {
+function readTags(tagDir = TAG_DIR) {
+  if (!fs.existsSync(tagDir)) {
+    return [];
+  }
+
+  return fs.readdirSync(tagDir)
+    .filter((fileName) => fileName.endsWith(".md"))
+    .map((fileName) => {
+      const markdown = fs.readFileSync(path.join(tagDir, fileName), "utf8");
+      return {
+        link: noteLinkForFile("05_tags", fileName),
+        members: extractYamlList(markdown, "members"),
+        childTags: extractYamlList(markdown, "child_tags"),
+      };
+    });
+}
+
+function buildItemGraph(recipes, tags = []) {
   const graph = new Map();
+
+  for (const tag of tags) {
+    for (const member of tag.members) {
+      if (!graph.has(member)) {
+        graph.set(member, []);
+      }
+      graph.get(member).push({
+        kind: "tag",
+        tag: tag.link,
+        output: tag.link,
+      });
+    }
+
+    for (const childTag of tag.childTags) {
+      if (!graph.has(childTag)) {
+        graph.set(childTag, []);
+      }
+      graph.get(childTag).push({
+        kind: "tag",
+        tag: tag.link,
+        output: tag.link,
+      });
+    }
+  }
 
   for (const recipe of recipes) {
     for (const input of recipe.inputs) {
@@ -92,6 +134,7 @@ function buildItemGraph(recipes) {
       }
       for (const output of recipe.outputs) {
         graph.get(input).push({
+          kind: "recipe",
           recipe,
           output,
         });
@@ -101,7 +144,7 @@ function buildItemGraph(recipes) {
 
   for (const edges of graph.values()) {
     edges.sort((a, b) =>
-      a.output.localeCompare(b.output) || a.recipe.link.localeCompare(b.recipe.link));
+      a.output.localeCompare(b.output) || (a.recipe ? a.recipe.link : a.tag).localeCompare(b.recipe ? b.recipe.link : b.tag));
   }
 
   return graph;
@@ -110,7 +153,10 @@ function buildItemGraph(recipes) {
 function findItemPaths(fromItem, toItem, options = {}) {
   const maxDepth = Number(options.maxDepth || 4);
   const limit = Number(options.limit || 20);
-  const graph = options.graph || buildItemGraph(options.recipes || readRecipes(options.recipeDir));
+  const graph = options.graph || buildItemGraph(
+    options.recipes || readRecipes(options.recipeDir),
+    options.tags || readTags(options.tagDir),
+  );
   const queue = [
     {
       item: fromItem,
@@ -130,6 +176,8 @@ function findItemPaths(fromItem, toItem, options = {}) {
     for (const edge of graph.get(current.item) || []) {
       const nextSteps = current.steps.concat([{
         from: current.item,
+        kind: edge.kind,
+        tag: edge.tag,
         recipe: edge.recipe,
         to: edge.output,
       }]);
@@ -159,6 +207,11 @@ function renderPath(pathSteps, index) {
   const lines = [`## Path ${index + 1}`, ""];
 
   for (const step of pathSteps) {
+    if (step.kind === "tag") {
+      lines.push(`- ${step.from} -> ${step.tag}`);
+      continue;
+    }
+
     lines.push(`- ${step.from} -> ${step.recipe.link} -> ${step.to}`);
     lines.push(`  - Method: ${step.recipe.method}`);
     if (step.recipe.machine) {
@@ -257,5 +310,6 @@ module.exports = {
   findItemPaths,
   normalizeItemReference,
   readRecipes,
+  readTags,
   renderMarkdown,
 };

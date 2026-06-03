@@ -15,7 +15,14 @@ if (!to) {
 
 const maxDepthInput = await tp.system.prompt("Maximum recipe steps", "4");
 const limitInput = await tp.system.prompt("Maximum paths to show", "20");
-const writeTarget = await tp.system.prompt("Optional output note path. Leave blank to insert here.", "");
+const safeTitlePart = (value) => value
+  .replace(/^\[\[/, "")
+  .replace(/\]\]$/, "")
+  .replace(/^01_Items\//, "")
+  .replace(/\.md$/i, "")
+  .replace(/[^a-zA-Z0-9._-]+/g, "_");
+const defaultOutput = `99_Views/Item Paths/${safeTitlePart(from)} to ${safeTitlePart(to)} Paths.md`;
+const writeTarget = await tp.system.prompt("Output note path. Leave blank to insert into current note.", defaultOutput);
 
 const fromLink = pathFinder.normalizeItemReference(from);
 const toLink = pathFinder.normalizeItemReference(to);

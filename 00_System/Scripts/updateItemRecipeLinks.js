@@ -4,6 +4,7 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..", "..");
 const ITEM_DIR = path.join(ROOT, "01_Items");
 const RECIPE_DIR = path.join(ROOT, "02_Recipes");
+const TAG_DIR = path.join(ROOT, "05_tags");
 
 const SECTION_START = "<!-- BEGIN GENERATED RECIPE LINKS -->";
 const SECTION_END = "<!-- END GENERATED RECIPE LINKS -->";
@@ -53,9 +54,34 @@ function extractRecipe(fileName) {
   };
 }
 
+function extractTagMembers(fileName) {
+  const fullPath = path.join(TAG_DIR, fileName);
+  const markdown = fs.readFileSync(fullPath, "utf8");
+  return {
+    link: noteLinkForFile("05_tags", fileName),
+    members: extractYamlList(markdown, "members"),
+    childTags: extractYamlList(markdown, "child_tags"),
+  };
+}
+
+function buildTagMemberIndex() {
+  const index = new Map();
+  if (!fs.existsSync(TAG_DIR)) {
+    return index;
+  }
+
+  for (const fileName of fs.readdirSync(TAG_DIR).filter((name) => name.endsWith(".md"))) {
+    const tag = extractTagMembers(fileName);
+    index.set(tag.link, [...tag.members, ...tag.childTags]);
+  }
+
+  return index;
+}
+
 function buildRecipeIndex() {
   const producedBy = new Map();
   const usedIn = new Map();
+  const tagMembers = buildTagMemberIndex();
 
   for (const fileName of fs.readdirSync(RECIPE_DIR).filter((name) => name.endsWith(".md"))) {
     const recipe = extractRecipe(fileName);
@@ -72,6 +98,13 @@ function buildRecipeIndex() {
         usedIn.set(input, []);
       }
       usedIn.get(input).push(recipe);
+
+      for (const member of tagMembers.get(input) || []) {
+        if (!usedIn.has(member)) {
+          usedIn.set(member, []);
+        }
+        usedIn.get(member).push(recipe);
+      }
     }
   }
 
@@ -206,6 +239,7 @@ if (require.main === module) {
 module.exports = {
   buildRecipeIndex,
   extractRecipe,
+  extractTagMembers,
   renderGeneratedSection,
   renderDirectItemList,
   updateGeneratedSection,

@@ -81,6 +81,24 @@ function isRecipeEntry(name) {
   return /^data\/[^/]+\/recipes?\/.+\.json$/i.test(name);
 }
 
+function isTagEntry(name) {
+  return /^data\/[^/]+\/tags\/(item|items|fluid|fluids)\/.+\.json$/i.test(name);
+}
+
+function tagInfoFromEntry(name) {
+  const match = String(name).match(/^data\/([^/]+)\/tags\/(item|items|fluid|fluids)\/(.+)\.json$/i);
+  if (!match) {
+    return null;
+  }
+  const registry = match[2].startsWith("fluid") ? "fluid" : "item";
+  return {
+    id: `#${match[1]}:${match[3]}`,
+    namespace: match[1],
+    registry,
+    path: match[3],
+  };
+}
+
 function stripBom(text) {
   return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
 }
@@ -110,10 +128,34 @@ function readRecipeJsonFromArchive(zipPath) {
     .flat();
 }
 
+function readTagJsonFromArchive(zipPath) {
+  const { buffer, entries } = readEntries(zipPath);
+  return entries
+    .filter((entry) => isTagEntry(entry.name))
+    .flatMap((entry) => {
+      try {
+        const info = tagInfoFromEntry(entry.name);
+        const content = stripBom(readEntryContent(buffer, entry).toString("utf8"));
+        const parsed = JSON.parse(content);
+        return [{
+          ...info,
+          raw: parsed,
+          sourcePath: entry.name,
+          sourceArchive: path.basename(zipPath),
+        }];
+      } catch {
+        return [];
+      }
+    });
+}
+
 module.exports = {
   isRecipeEntry,
+  isTagEntry,
   readEntries,
   readEntryContent,
   readRecipeJsonFromArchive,
+  readTagJsonFromArchive,
   stripBom,
+  tagInfoFromEntry,
 };

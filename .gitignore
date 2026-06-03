@@ -1,10 +1,10 @@
 # Local modpack inputs
-05_Materials/mods/*
-!05_Materials/mods/.gitkeep
-05_Materials/**/*.jar
-05_Materials/**/*.zip
-05_Materials/**/*.disabled
-05_Materials/**/.connector/
+06_Materials/mods/*
+!06_Materials/mods/.gitkeep
+06_Materials/**/*.jar
+06_Materials/**/*.zip
+06_Materials/**/*.disabled
+06_Materials/**/.connector/
 
 # Generated vault output
 01_Items/*.md
@@ -15,6 +15,8 @@
 !03_Machines/.gitkeep
 04_Mods/*.md
 !04_Mods/.gitkeep
+05_tags/*.md
+!05_tags/.gitkeep
 
 # Node / tooling
 node_modules/
